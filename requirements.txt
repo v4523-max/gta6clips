@@ -1,5 +1,5 @@
 requests
-opencv-python
+opencv-python-headless>=4.8,<5
 numpy
 faster-whisper
 yt-dlp

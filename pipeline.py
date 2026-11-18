@@ -238,7 +238,13 @@ def duration(path):
 
 def process(src, out_mp4, title, broadcaster, whisper_model, subs=True):
     src, out_mp4 = Path(src).resolve(), Path(out_mp4).resolve()
-    face, (vw, vh) = detect_facecam(src)
+    try:
+        face, (vw, vh) = detect_facecam(src)
+    except Exception as e:  # yüz tespiti çökerse blur layout ile devam et
+        print(f"  ! yüz tespiti çalışmadı: {e}")
+        cap = cv2.VideoCapture(str(src))
+        face, vw, vh = None, int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        cap.release()
     print(f"  facecam: {'var' if face else 'yok -> blur layout'}")
     words, lang = transcribe(src, whisper_model) if subs else ([], None)
     hook = make_hook(title, words)
@@ -297,6 +303,7 @@ def run_once(a, seen):
             seen.add(c["id"])
             STATE.write_text(json.dumps(sorted(seen)))
         except Exception as e:
+            import traceback; traceback.print_exc()
             print(f"  ! hata: {e}")
 
 
