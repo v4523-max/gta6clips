@@ -9,11 +9,11 @@ on:
         description: "Kaç video"
         default: "8"
       lang:
-        description: "Dil filtresi (boş=hepsi, tr, en,tr)"
-        default: ""
+        description: "Dil filtresi (tr, en,tr, all=hepsi)"
+        default: "tr"
       hours:
         description: "Son kaç saatin klipleri"
-        default: "3"
+        default: "6"
 
 concurrency:
   group: clips
@@ -43,10 +43,11 @@ jobs:
           TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
           TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          WHISPER_LANG: ${{ (inputs.lang || 'tr') == 'tr' && 'tr' || '' }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python pipeline.py --top "${{ inputs.top || '8' }}" --hours "${{ inputs.hours || '3' }}" --lang "${{ inputs.lang || '' }}"
+          python pipeline.py --top "${{ inputs.top || '8' }}" --hours "${{ inputs.hours || '6' }}" --lang "${{ inputs.lang || 'tr' }}" --min-views 20
       - name: Görülen klipleri kaydet
         if: always()
         run: |

@@ -18,8 +18,10 @@ Sonrasında her 20 dakikada kendisi çalışır. Videolar Telegram'a gelir; Tele
 
 ## Ayarlar (Run workflow ekranında)
 - `top`: tur başına video sayısı
-- `lang`: `tr` = sadece Türk yayıncılar
-- `hours`: son kaç saatin klipleri
+- `lang`: varsayılan `tr` = sadece Türk yayıncılar (`all` = hepsi)
+- `hours`: son kaç saatin klipleri (varsayılan 6)
+
+Türkçe mod: Twitch'te 1000 klip taranır, min. 20 izlenme, yayıncı başı 3 klip, altyazı Türkçe zorlanır.
 
 ## Ne yapıyor
 - Önemli an = Twitch'te GTA VI kategorisinde izleyicilerin kliplediği ve en çok izlenen anlar.
