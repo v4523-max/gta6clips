@@ -160,7 +160,8 @@ def transcribe(path, model_name):
         from faster_whisper import WhisperModel
         if _model is None:
             _model = WhisperModel(model_name, device="auto", compute_type="int8")
-        segs, info = _model.transcribe(str(path), word_timestamps=True, vad_filter=True)
+        segs, info = _model.transcribe(str(path), word_timestamps=True, vad_filter=True,
+                                       language=os.environ.get("WHISPER_LANG") or None)
         words = [(w.start, w.end, w.word.strip()) for s in segs for w in (s.words or []) if w.word.strip()]
         return words, info.language
     except Exception as e:
@@ -286,8 +287,8 @@ def telegram(video, caption):
 def run_once(a, seen):
     token = twitch_token()
     gid = get_game_id(token, a.game)
-    clips = pick(get_clips(token, gid, a.hours), seen, a.top, a.min_views, a.per_streamer,
-                 set(a.lang.split(",")) if a.lang else None)
+    clips = pick(get_clips(token, gid, a.hours, a.pages), seen, a.top, a.min_views, a.per_streamer,
+                 set(a.lang.split(",")) if a.lang and a.lang != "all" else None)
     print(f"{datetime.now():%H:%M} -> {len(clips)} yeni klip")
     day = Path("out") / datetime.now().strftime("%Y%m%d")
     (day / "raw").mkdir(parents=True, exist_ok=True)
@@ -297,7 +298,7 @@ def run_once(a, seen):
         try:
             raw = download(c["url"], day / "raw" / f"{name}.mp4")
             hook = process(raw, day / f"{name}.mp4", c["title"], c["broadcaster_name"], a.whisper)
-            post = f"{hook}\n\n#GTA6 #GTAVI #{c['broadcaster_name']}\nKaynak: {c['url']}"
+            post = f"{hook}\n\n#GTA6 #GTA6Türkiye #GTAVI #{c['broadcaster_name']}\nKaynak: {c['url']}"
             (day / f"{name}.txt").write_text(post + "\n", encoding="utf-8")
             telegram(day / f"{name}.mp4", f"{post}\n({c['view_count']} izlenme)")
             seen.add(c["id"])
@@ -310,11 +311,12 @@ def run_once(a, seen):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--game", default="Grand Theft Auto VI")
-    p.add_argument("--hours", type=float, default=3, help="son kaç saatin klipleri")
+    p.add_argument("--hours", type=float, default=6, help="son kaç saatin klipleri")
     p.add_argument("--top", type=int, default=10, help="tur başına kaç video")
-    p.add_argument("--min-views", type=int, default=100)
-    p.add_argument("--per-streamer", type=int, default=2)
-    p.add_argument("--lang", default="", help="örn: tr  veya  en,tr (boş = hepsi)")
+    p.add_argument("--min-views", type=int, default=20)
+    p.add_argument("--pages", type=int, default=10, help="Twitch'ten kaç sayfa (x100) klip taransın")
+    p.add_argument("--per-streamer", type=int, default=3)
+    p.add_argument("--lang", default="tr", help="örn: tr  veya  en,tr (all = hepsi)")
     p.add_argument("--whisper", default="small")
     p.add_argument("--watch", type=int, default=0, help="saniye; 0 = tek tur")
     p.add_argument("--local", help="yerel video işle (test)")
