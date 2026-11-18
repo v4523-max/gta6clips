@@ -1,0 +1,5 @@
+requests
+opencv-python
+numpy
+faster-whisper
+yt-dlp
